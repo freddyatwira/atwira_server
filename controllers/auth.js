@@ -28,3 +28,7 @@ export const register = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const login = (req, res) => {};
+
+export const logout = (req, res) => {};

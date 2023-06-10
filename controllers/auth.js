@@ -1,6 +1,7 @@
 import { User } from "../models/UserModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { generateToken } from "../middleware/authToken.js";
 
 export const register = async (req, res) => {
   try {
@@ -10,7 +11,8 @@ export const register = async (req, res) => {
 
     const oldUser = await User.findOne({ email });
 
-    if (oldUser) return res.json({ message: "This email is already in use" });
+    if (oldUser)
+      return res.status(404).json({ message: "This email is already in use" });
 
     //hashing password
     const salt = bcrypt.genSaltSync(10);
@@ -40,7 +42,7 @@ export const login = async (req, res) => {
     if (!user)
       return res
         .status(400)
-        .json({ message: "No user with associated with that email" });
+        .json({ message: "No user associated with that email" });
 
     //compare password
     const isPassword = await bcrypt.compare(password, user.password);
@@ -50,18 +52,27 @@ export const login = async (req, res) => {
 
     //everything is right, ingest token
 
-    const token = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN, {
-      expiresIn: "100s",
+    // const token = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN, {
+    //   expiresIn: "30s",
+    // });
+
+    res.cookie("accessToken", generateToken(user._id, user.name, user.email), {
+      httpOnly: true,
     });
-    res.cookie("accessToken", token, { httpOnly: true });
-    return res.status(200).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-    });
+    if (user) {
+      return res.status(201).json({
+        token: generateToken(user._id, user.name, user.email),
+      });
+    }
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
+
+// const generateToken = (id) => {
+//   return jwt.sign({ id }, process.env.ACCESS_TOKEN, {
+//     expiresIn: "30d",
+//   });
+// };
 
 export const logout = (req, res) => {};

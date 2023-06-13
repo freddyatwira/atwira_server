@@ -1,6 +1,5 @@
 import { User } from "../models/UserModel.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { generateToken } from "../middleware/authToken.js";
 
 export const register = async (req, res) => {
@@ -61,6 +60,7 @@ export const login = async (req, res) => {
     });
     if (user) {
       return res.status(201).json({
+        _id: user._id,
         token: generateToken(user._id, user.name, user.email),
       });
     }
@@ -74,5 +74,15 @@ export const login = async (req, res) => {
 //     expiresIn: "30d",
 //   });
 // };
+
+export const profile = async (req, res) => {
+  try {
+    const { _id, name, email } = await User.findById(req.user.id);
+
+    return res.status(200).json({ id: _id, name, email });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
 
 export const logout = (req, res) => {};

@@ -2,16 +2,15 @@ import mongoose from "mongoose";
 
 const PostSchema = new mongoose.Schema(
   {
-    user: {
+    author: {
       type: mongoose.Schema.Types.ObjectId,
-      required: [true, "No user associated with this post"],
       ref: "User",
     },
     title: {
       type: String,
       required: [true, "title is required"],
     },
-    description: {
+    desc: {
       type: String,
       required: [true, "description is required"],
     },
